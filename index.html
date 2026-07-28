@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Irodalmi Videók — egy könyv, amit megnyithatsz</title>
+<meta name="description" content="Irodalmi videók interaktív, könyv-animációs tartalomjegyzékben — Shakespeare és a világirodalom nagyjai, egy kattintásra.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<a class="site-title" href="index.html">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 5c3-1.5 6-1.5 9 0v14c-3-1.5-6-1.5-9 0V5zM21 5c-3-1.5-6-1.5-9 0v14c3-1.5 6-1.5 9 0V5z"/></svg>
+  Irodalmi Videók
+</a>
+
+<div class="stage">
+  <div class="book-cover" id="cover" tabindex="0" role="button" aria-label="Könyv kinyitása">
+    <div class="cover-ornament">📖</div>
+    <h1>Irodalmi<br>Videók</h1>
+    <p class="cover-sub">egy könyv, amit meg lehet nyitni</p>
+    <p class="cover-hint">Kattints a kinyitáshoz</p>
+  </div>
+
+  <div class="book" id="book">
+    <div class="book-page book-page-left">
+      <div class="page-inner preface">
+        <h2>Előszó</h2>
+        <p class="drop-cap">Ez az oldal valójában egy könyv — csak épp a lapjai közt nem szöveg, hanem videó lapul. Nyisd ki, lapozz bele a tartalomjegyzékbe a jobb oldalon, és válaszd ki, melyik írót vagy művet szeretnéd megnézni.</p>
+        <p>Minden fejezet egy rövid, ismeretterjesztő videóhoz vezet — egyelőre néhány közismert angol nyelvű felvétellel feltöltve, de a gyűjtemény hamarosan bővül.</p>
+        <span class="page-number">— előszó —</span>
+      </div>
+    </div>
+
+    <div class="book-page book-page-right">
+      <div class="flip-page" id="flip-page">
+        <div class="page-face page-front">
+          <div class="page-inner toc-page">
+            <h2>Tartalom</h2>
+            <ol class="toc-list" id="toc-list"></ol>
+            <span class="page-number">— tartalomjegyzék —</span>
+          </div>
+        </div>
+        <div class="page-face page-back">
+          <div class="page-inner video-page" id="video-page">
+            <!-- JS tölti fel a kiválasztott fejezet videójával -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="site-footer">Nyílt forráskódú projekt · <a href="https://github.com/Csancus/irodalmi-videok">GitHub</a></p>
+
+<script src="js/chapters-data.js"></script>
+<script src="js/book.js"></script>
+</body>
+</html>
