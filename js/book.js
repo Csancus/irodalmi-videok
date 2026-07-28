@@ -205,7 +205,16 @@ function goToToc() {
 }
 
 function handleHashChange() {
+  const book = document.getElementById("book");
   const hash = location.hash.slice(1);
+
+  // Ha a könyv épp be van csukva (borító látszik), de a hash mégis egy
+  // konkrét oldalra mutat (pl. böngésző vissza/előre gomb után), nyissuk
+  // meg újra a könyvet — animáció nélkül, mielőtt a tartalmat frissítenénk.
+  if (book && !book.classList.contains("visible") && hash) {
+    openBookInstant();
+  }
+
   const m = /^fejezet-(\d+)$/.exec(hash);
   if (m) {
     const num = Number(m[1]);
@@ -217,7 +226,12 @@ function handleHashChange() {
   }
 }
 
-/* ---------------- Borító ---------------- */
+/* ---------------- Borító nyitás / csukás ---------------- */
+
+function setToolbarVisible(visible) {
+  const toolbar = document.getElementById("book-toolbar");
+  if (toolbar) toolbar.classList.toggle("visible", visible);
+}
 
 function openBook() {
   const cover = document.getElementById("cover");
@@ -225,11 +239,52 @@ function openBook() {
   if (!cover || !book) return;
   cover.classList.add("opening");
   book.classList.add("visible");
+  setToolbarVisible(true);
   setTimeout(() => {
     cover.hidden = true;
     positionFlipPage();
   }, 900);
   if (!location.hash) location.hash = "toc";
+}
+
+// Animáció nélküli, azonnali megnyitás — mélylinkről érkezéskor, illetve
+// böngésző vissza/előre navigációnál használjuk, amikor a könyv már be
+// volt csukva.
+function openBookInstant() {
+  const cover = document.getElementById("cover");
+  const book = document.getElementById("book");
+  if (cover) cover.hidden = true;
+  if (book) book.classList.add("visible");
+  setToolbarVisible(true);
+  requestAnimationFrame(positionFlipPage);
+}
+
+// A "Becsukás" gomb: lapozás-szerű animációval csukja be a könyvet
+// (a borító visszafordul a helyére), majd a főoldal URL-jére (hash nélkül)
+// ugrik vissza — ez a könyv "fedlapja".
+function closeBook() {
+  const cover = document.getElementById("cover");
+  const book = document.getElementById("book");
+  if (!cover || !book) return;
+
+  cover.hidden = false;
+  // Force reflow, hogy a hidden->visible váltás után a lezáró animáció
+  // biztosan a "opening" állapotból induljon, ne egy ugrással.
+  void cover.offsetWidth;
+  cover.classList.remove("opening");
+  book.classList.remove("visible");
+  setToolbarVisible(false);
+
+  history.pushState(null, "", location.pathname + location.search);
+  currentChapterNum = null;
+  document.title = DEFAULT_TITLE;
+
+  setTimeout(() => {
+    // A jobb oldalt visszaállítjuk tartalomjegyzékre, hogy legközelebb
+    // (akár egy #fejezet-N mélylinkről) friss állapotból induljunk.
+    const base = document.getElementById("right-base");
+    if (base) renderTocInto(base);
+  }, 900);
 }
 
 /* ---------------- Init ---------------- */
@@ -245,15 +300,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (deepLinkChapter) {
     // Mélylink egy konkrét fejezetre: azonnal ott nyitjuk meg a könyvet, animáció nélkül.
-    if (cover) cover.hidden = true;
-    if (book) book.classList.add("visible");
+    openBookInstant();
     showChapterNum(deepLinkChapter.num, { animate: false });
-    requestAnimationFrame(positionFlipPage);
   } else if (initialHash === "toc") {
-    if (cover) cover.hidden = true;
-    if (book) book.classList.add("visible");
+    openBookInstant();
     showToc({ animate: false });
-    requestAnimationFrame(positionFlipPage);
   } else {
     // Nincs (érvényes) mélylink — a tartalomjegyzéket előkészítjük az alaprétegben,
     // hogy a borító kinyitásakor már ott legyen, csak a borító takarja.
@@ -269,6 +320,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  const toolbarTocBtn = document.getElementById("toolbar-toc-btn");
+  if (toolbarTocBtn) toolbarTocBtn.addEventListener("click", goToToc);
+  const toolbarCloseBtn = document.getElementById("toolbar-close-btn");
+  if (toolbarCloseBtn) toolbarCloseBtn.addEventListener("click", closeBook);
 
   window.addEventListener("hashchange", handleHashChange);
   window.addEventListener("resize", positionFlipPage);
