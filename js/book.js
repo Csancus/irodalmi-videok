@@ -1,5 +1,7 @@
 // Irodalmi Videók — a "könyv" interakciói: borító nyitása, tartalomjegyzék,
-// lapozás-animáció a videóhoz és vissza.
+// lapozás-animáció a videókhoz, és lapozás előre/hátra a fejezetek között.
+
+let currentChapterNum = null; // null = a tartalomjegyzék látszik, egyébként 1..N
 
 function renderToc() {
   const list = document.getElementById("toc-list");
@@ -19,17 +21,17 @@ function renderToc() {
   ).join("");
 
   list.querySelectorAll("[data-chapter]").forEach((btn) => {
-    btn.addEventListener("click", () => openChapter(Number(btn.dataset.chapter)));
+    btn.addEventListener("click", () => goToChapter(Number(btn.dataset.chapter)));
   });
+
+  const tocNextBtn = document.getElementById("toc-next-btn");
+  if (tocNextBtn) tocNextBtn.addEventListener("click", () => goToChapter(1));
 }
 
-function openChapter(num) {
-  const chapter = CHAPTERS.find((c) => c.num === num);
-  const flipPage = document.getElementById("flip-page");
-  const videoPage = document.getElementById("video-page");
-  if (!chapter || !flipPage || !videoPage) return;
-
-  videoPage.innerHTML = `
+function chapterPageHtml(chapter) {
+  const isFirst = chapter.num === 1;
+  const isLast = chapter.num === CHAPTERS.length;
+  return `
     <h3>${chapter.num}. ${chapter.title}</h3>
     <div class="video-frame-wrap">
       <iframe
@@ -42,17 +44,64 @@ function openChapter(num) {
     </div>
     <p class="video-meta">${chapter.author} &middot; ${chapter.channel}</p>
     <p class="video-blurb">${chapter.blurb}</p>
-    <button class="back-to-toc" data-back>&larr; Vissza a tartalomjegyzékhez</button>
+    <div class="page-nav-row">
+      <button class="page-nav-btn" data-nav="prev">&larr; ${isFirst ? "Tartalomjegyzék" : "Előző fejezet"}</button>
+      ${
+        isLast
+          ? `<button class="page-nav-btn" data-nav="toc">Tartalomjegyzék</button>`
+          : `<button class="page-nav-btn" data-nav="next">Következő fejezet &rarr;</button>`
+      }
+    </div>
   `;
-
-  videoPage.querySelector("[data-back]").addEventListener("click", closeChapter);
-
-  flipPage.classList.add("flipped");
 }
 
-function closeChapter() {
+// A tartalomjegyzékből (nincs még kinyitva a lap) egyszerű, egyszeri
+// lapozás-animációval nyitjuk a fejezetet; ha már egy másik fejezetnél
+// állunk, akkor "becsukjuk-majd-kinyitjuk" a lapot, hogy a váltás is
+// valódi lapozásnak tűnjön, nem csak tartalomcserének.
+function goToChapter(num) {
+  const chapter = CHAPTERS.find((c) => c.num === num);
+  const flipPage = document.getElementById("flip-page");
+  if (!chapter || !flipPage) return;
+
+  if (currentChapterNum === null) {
+    showChapterContent(chapter);
+    flipPage.classList.add("flipped");
+    return;
+  }
+
+  if (currentChapterNum === num) return;
+
+  flipPage.classList.remove("flipped");
+  setTimeout(() => {
+    showChapterContent(chapter);
+    flipPage.classList.add("flipped");
+  }, 420); // kb. a fordulat félidejében, amikor a lap "élére áll" — ekkor cserélünk láthatatlanul
+}
+
+function showChapterContent(chapter) {
+  const videoPage = document.getElementById("video-page");
+  if (!videoPage) return;
+  videoPage.innerHTML = chapterPageHtml(chapter);
+  currentChapterNum = chapter.num;
+
+  const prevBtn = videoPage.querySelector('[data-nav="prev"]');
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      if (chapter.num === 1) goToToc();
+      else goToChapter(chapter.num - 1);
+    });
+  }
+  const nextBtn = videoPage.querySelector('[data-nav="next"]');
+  if (nextBtn) nextBtn.addEventListener("click", () => goToChapter(chapter.num + 1));
+  const tocBtn = videoPage.querySelector('[data-nav="toc"]');
+  if (tocBtn) tocBtn.addEventListener("click", goToToc);
+}
+
+function goToToc() {
   const flipPage = document.getElementById("flip-page");
   if (!flipPage) return;
+  currentChapterNum = null;
   flipPage.classList.remove("flipped");
   // A videót a lapozás animáció végeztével állítjuk le/ürítjük ki, hogy a
   // háttérben ne szóljon tovább a hang.
@@ -89,4 +138,17 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  // Billentyűzetes lapozás (nyíl balra/jobbra), amíg a könyv nyitva van.
+  document.addEventListener("keydown", (e) => {
+    const book = document.getElementById("book");
+    if (!book || !book.classList.contains("visible")) return;
+    if (e.key === "ArrowRight") {
+      goToChapter(currentChapterNum === null ? 1 : Math.min(currentChapterNum + 1, CHAPTERS.length));
+    } else if (e.key === "ArrowLeft") {
+      if (currentChapterNum === null) return;
+      if (currentChapterNum === 1) goToToc();
+      else goToChapter(currentChapterNum - 1);
+    }
+  });
 });
