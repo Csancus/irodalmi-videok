@@ -60,14 +60,19 @@ body {
   position: relative;
   width: 100%;
   max-width: 980px;
+  /* Fix méret, hogy a borító <-> könyv váltás NE változtassa az oldal
+     magasságát (enélkül a könyv megjelenése lejjebb tolta/görgette az oldalt). */
+  height: min(80vh, 640px);
 }
 
 /* ---------------- Cover ---------------- */
 
 .book-cover {
+  position: absolute;
+  inset: 0;
+  margin: auto;
   width: min(92vw, 460px);
   height: min(78vh, 620px);
-  margin: 0 auto;
   background:
     radial-gradient(ellipse at 50% 30%, var(--leather-700), var(--leather-900) 75%);
   border-radius: 10px;
@@ -136,8 +141,8 @@ body {
 
 .book {
   display: none;
-  width: 100%;
-  height: min(80vh, 640px);
+  position: absolute;
+  inset: 0;
   gap: 0;
   perspective: 2200px;
   opacity: 0;
@@ -213,17 +218,25 @@ body {
   color: var(--ink-700);
   opacity: 0.6;
 }
+.toc-page .page-number { display: none; } /* helyhiány — a 10 fejezetnek egy oldalon kell elférnie */
+.toc-page h2 { margin-bottom: 10px; }
 
 .toc-list {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-auto-flow: column;
+  grid-template-rows: repeat(5, auto); /* 10 fejezet feltételezve — ha bővül a lista, ezt igazítani kell */
+  column-gap: clamp(14px, 3vw, 28px);
 }
+.toc-list li { min-width: 0; }
 .toc-item {
   display: flex;
   align-items: baseline;
-  gap: 12px;
-  padding: 11px 4px;
+  gap: 8px;
+  padding: 7px 4px;
   border-bottom: 1px dotted rgba(74, 56, 44, 0.35);
   cursor: pointer;
   background: none;
@@ -244,16 +257,29 @@ body {
   font-family: var(--display);
   color: var(--gold-500);
   font-weight: 700;
-  width: 1.6em;
+  width: 1.5em;
   flex-shrink: 0;
+  font-size: 0.92rem;
 }
 .toc-text { flex: 1; min-width: 0; }
-.toc-title { font-size: 1.05rem; display: block; }
+.toc-title {
+  font-size: 0.9rem;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .toc-author {
   font-family: var(--sans);
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   color: var(--ink-700);
   opacity: 0.75;
+  line-height: 1.3;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .toc-dots {
   flex-shrink: 0;
@@ -363,10 +389,17 @@ body {
 }
 
 @media (max-width: 640px) {
-  .book { height: 74vh; }
-  .page-inner { padding: 18px; }
+  .stage { height: 78vh; }
+  .book-cover { height: min(78vh, 560px); }
+  .page-inner { padding: 14px; }
   .book-cover { padding: 26px; gap: 12px; }
-  .toc-title { font-size: 0.95rem; }
+  .toc-page h2 { margin-bottom: 6px; padding-bottom: 6px; }
+  .toc-list { column-gap: 10px; }
+  .toc-item { padding: 5px 2px; gap: 6px; }
+  .toc-num { font-size: 0.8rem; width: 1.2em; }
+  .toc-title { font-size: 0.82rem; line-height: 1.2; }
+  .toc-author { font-size: 0.62rem; }
+  .toc-dots { display: none; }
   .site-title { font-size: 0.82rem; top: 12px; left: 14px; }
 }
 
