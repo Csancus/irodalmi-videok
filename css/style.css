@@ -289,30 +289,59 @@ body {
   opacity: 0.55;
 }
 
-/* ---------------- Flip mechanism ---------------- */
+/* ---------------- Valódi lapozás-mechanizmus ----------------
+   A jobb oldal "alaprétege" (#right-base) mindig a JELENLEGI tartalmat
+   mutatja. A #flip-page egy a .book közvetlen gyereke (nem a jobb lap
+   dobozáé!), hogy szabadon átlapozhasson a bal oldal fölé — helyzetét/
+   méretét a book.js igazítja pontosan a jobb laphoz (getBoundingClientRect).
+   Nyugalmi állapotban láthatatlan (opacity:0); lapozáskor a book.js
+   előbb az ELŐZŐ tartalom pillanatképét teszi a front lapra, becseréli
+   az alapréteget az ÚJ tartalomra (ami így "alul", takarásban van), majd
+   elforgatja a lapot a bal szél (gerinc) körül — a forgás felénél a lap
+   "élére áll", ekkor tűnik el a régi (front) és bukkan elő az új tartalom
+   az alaprétegből, a lap hátoldala pedig (page-back) a bal oldal fölé
+   lendül, mintha egy valódi lapot fordítanánk át. */
 
 .flip-page {
   position: absolute;
-  inset: 0;
+  /* alapértelmezett (JS által felülírt) hely, amíg a book.js ki nem méri a jobb lapot */
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 50%;
   transform-style: preserve-3d;
-  transform-origin: center center; /* kártya-flip a helyén, nem a gerinc körül —
-    így a videó ugyanabban a "zsebben" jelenik meg, ahonnan a tartalomjegyzék eltűnt */
+  transform-origin: left center;
+  transform: rotateY(0deg);
   transition: transform 0.9s cubic-bezier(0.45, 0, 0.2, 1);
-  z-index: 2;
-  will-change: transform;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 6;
 }
-.flip-page.flipped { transform: rotateY(180deg); }
+.flip-page.flip-active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: rotateY(-180deg);
+}
 
 .page-face {
   position: absolute;
   inset: 0;
   backface-visibility: hidden;
   background: linear-gradient(120deg, var(--paper-100), var(--paper-200));
+  box-shadow: var(--shadow-deep);
+  border-radius: 2px 10px 10px 2px;
+  overflow: hidden;
 }
 .page-front { z-index: 2; }
 .page-back {
   transform: rotateY(180deg);
   background: linear-gradient(240deg, var(--paper-100), var(--paper-200));
+}
+.flip-back-paper {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(100deg, rgba(85,41,26,0.03) 0 2px, transparent 2px 6px);
 }
 
 .video-page {

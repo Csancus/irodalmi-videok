@@ -36,19 +36,18 @@
     </div>
 
     <div class="book-page book-page-right">
-      <div class="flip-page" id="flip-page">
-        <div class="page-face page-front">
-          <div class="page-inner toc-page">
-            <h2>Tartalom</h2>
-            <ol class="toc-list" id="toc-list"></ol>
-            <button class="page-nav-btn toc-next-btn" id="toc-next-btn">Következő fejezet &rarr;</button>
-          </div>
-        </div>
-        <div class="page-face page-back">
-          <div class="page-inner video-page" id="video-page">
-            <!-- JS tölti fel a kiválasztott fejezet videójával -->
-          </div>
-        </div>
+      <div class="page-inner" id="right-base"><!-- JS tölti fel: tartalomjegyzék vagy fejezet --></div>
+    </div>
+
+    <!-- A lapozó lap a .book közvetlen gyereke (nem a jobb oldal dobozáé),
+         hogy szabadon átnyúlhasson a bal oldal fölé lapozás közben —
+         helyzetét/méretét a book.js igazítja a jobb laphoz. -->
+    <div class="flip-page" id="flip-page">
+      <div class="page-face page-front">
+        <div class="page-inner" id="flip-front"></div>
+      </div>
+      <div class="page-face page-back">
+        <div class="flip-back-paper"></div>
       </div>
     </div>
   </div>

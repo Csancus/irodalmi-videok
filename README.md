@@ -1,8 +1,11 @@
 # Irodalmi Videók
 
 Egy weboldal, ami valójában egy könyv: kinyitható borító, tartalomjegyzék, és
-minden fejezetre kattintva a lap "kilapozódik", hogy a hátoldalán megjelenjen
-a hozzá tartozó videó.
+minden fejezetre kattintva a lap valódi lapozás-animációval (a gerinc körül,
+a bal oldal fölé lendülve) fordul át, hogy megjelenjen a hozzá tartozó videó.
+Fejezetről fejezetre is lehet lapozni (nem csak a tartalomjegyzékből), és
+minden oldalnak saját, megosztható URL-je van (`#toc`, `#fejezet-1` … `#fejezet-10`)
+— egy ilyen linket megnyitva a könyv rögtön ott nyílik meg, animáció nélkül.
 
 Egyelőre **ideiglenes/dummy tartalommal** fut — 10 valós, ellenőrzött (de nem
 véglegesnek szánt) YouTube videóval, főleg Shakespeare-témában (TED-Ed,
